@@ -1,0 +1,23 @@
+**/target/
+*.class
+*.jar
+*.war
+*.log
+
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+.env
+.env.local
+.env.*.local
+
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
+# KhetRent project
