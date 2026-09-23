@@ -57,12 +57,12 @@ public class EquipmentService {
             }
         }
 
-        EquipmentAvailability availability = null;
+        EquipmentAvailability availability = EquipmentAvailability.AVAILABLE;
         if (StringUtils.hasText(availabilityStr)) {
             try {
                 availability = EquipmentAvailability.valueOf(availabilityStr.trim().toUpperCase());
             } catch (IllegalArgumentException ignored) {
-                // unknown availability string → treat as no filter
+                // unknown availability string → treat as AVAILABLE default
             }
         }
 

@@ -309,41 +309,14 @@ export default function App() {
 
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
-
+    setIsRegistering(true);
     setAuthError('');
     setAuthSuccess('');
-
-    const name = registerName.trim();
-    const email = registerEmail.trim();
-    const phone = registerPhone.trim();
-    const password = registerPassword;
-
-    if (!/^[A-Za-z ]+$/.test(name)) {
-      setAuthError('Name must contain only alphabets and spaces.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setAuthError('Please enter a valid email address.');
-      return;
-    }
-
-    if (!/^[0-9]{10}$/.test(phone)) {
-      setAuthError('Phone number must contain exactly 10 digits.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setAuthError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setIsRegistering(true);
     try {
       const payload = {
-        name,
-        email,
-        phone,
+        name: registerName,
+        email: registerEmail,
+        phone: registerPhone,
         password: registerPassword,
         role: registerRole,
       };
@@ -381,6 +354,57 @@ export default function App() {
     setSuccessMsg('');
   };
 
+  const handleQuickOwnerLogin = () => {
+    setLoginEmail('suresh.owner@example.com');
+    setLoginPassword('Password123!');
+    setTimeout(() => {
+      handleLogin();
+    }, 50);
+  };
+
+  const handleQuickFarmerLogin = async () => {
+    setIsLoggingIn(true);
+    setAuthError('');
+    const demoEmail = 'ramesh.farmer@example.com';
+    const demoPassword = 'Password123!';
+
+    try {
+      const res = await authLogin(demoEmail, demoPassword);
+      if (res.success && res.data) {
+        const { token: jwtToken, role, name } = res.data;
+        localStorage.setItem('token', jwtToken);
+        localStorage.setItem('role', role);
+        localStorage.setItem('name', name);
+        setToken(jwtToken);
+        setUserRole(role);
+        setUserName(name);
+      }
+    } catch (err) {
+      // If demo farmer doesn't exist, auto register and log in
+      try {
+        const regRes = await authRegister({
+          name: 'Ramesh Kumar',
+          email: demoEmail,
+          phone: '9876543210',
+          password: demoPassword,
+          role: 'FARMER',
+        });
+        if (regRes.success && regRes.data) {
+          const { token: jwtToken, role, name } = regRes.data;
+          localStorage.setItem('token', jwtToken);
+          localStorage.setItem('role', role);
+          localStorage.setItem('name', name);
+          setToken(jwtToken);
+          setUserRole(role);
+          setUserName(name);
+        }
+      } catch (regErr) {
+        setAuthError('Quick sign in failed. Please try standard login or registration.');
+      }
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   // ─── Owner Form Handlers ───────────────────────────────────────────────
   const handleInputChange = (e) => {
@@ -687,8 +711,29 @@ export default function App() {
                   <p>Log in with your Farmer or Owner account to get started</p>
                 </div>
 
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <button
+                    id="quick-farmer-login-btn"
+                    type="button"
+                    className="quick-login-btn"
+                    onClick={handleQuickFarmerLogin}
+                    disabled={isLoggingIn}
+                  >
+                    🚜 Quick Sign In as Farmer (Ramesh)
+                  </button>
+                  <button
+                    id="quick-owner-login-btn"
+                    type="button"
+                    className="quick-login-btn"
+                    style={{ background: '#f0fdf4', borderColor: '#86efac', color: '#166534' }}
+                    onClick={handleQuickOwnerLogin}
+                    disabled={isLoggingIn}
+                  >
+                    🚀 Quick Sign In as Owner (Suresh)
+                  </button>
+                </div>
 
-                <div className="divider">Enter your credentials</div>
+                <div className="divider">or enter credentials</div>
 
                 <form onSubmit={handleLogin}>
                   <div className="form-group">
@@ -765,8 +810,8 @@ export default function App() {
                       type="text"
                       className="form-control"
                       value={registerName}
-                      onChange={(e) => setRegisterName(e.target.value.replace(/[^A-Za-z ]/g, ''))}
-                      placeholder="e.g. Sahil Nikam"
+                      onChange={(e) => setRegisterName(e.target.value)}
+                      placeholder="e.g. Ramesh Kumar"
                       required
                     />
                   </div>
